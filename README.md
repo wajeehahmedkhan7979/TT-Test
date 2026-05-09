@@ -57,12 +57,6 @@ cp .env.example .env.local  # fill in your Supabase public keys
 npm run dev                  # → http://localhost:3000
 ```
 
-### 3. Run Tests
-
-```bash
-cd backend
-npm test
-```
 
 ## Project Structure
 
