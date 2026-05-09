@@ -12,34 +12,36 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const frontendUrl = configService.get<string>('FRONTEND_URL', 'http://localhost:3000').replace(/['"]/g, '');
-  
-  const allowedOrigins = frontendUrl.split(',').map(origin => origin.trim().toLowerCase());
-  console.log(`🔒 CORS: Allowing origins: ${allowedOrigins.join(', ')}`);
-  
+  console.log(`🔒 CORS: Allowing origin: ${frontendUrl}`);
+
+  // Explicit OPTIONS handler at raw Express level.
+  // Fires before NestJS guards and before any proxy interference,
+  // guaranteeing preflight requests always get the correct CORS headers.
+  app.use((req: any, res: any, next: any) => {
+    // If frontendUrl is a comma-separated list, we take the first one or match the origin
+    const origin = req.headers.origin;
+    const allowedOrigins = frontendUrl.split(',').map(o => o.trim());
+    
+    if (allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    } else {
+      res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
+    }
+
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With,apollo-require-preflight');
+    
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+    next();
+  });
+
+  // Keep NestJS CORS as a backup
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-      
-      const normalizedOrigin = origin.trim().toLowerCase().replace(/\/$/, '');
-      const isAllowed = allowedOrigins.some(allowed => 
-        allowed.replace(/\/$/, '') === normalizedOrigin
-      );
-      
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        console.warn(`⚠️ CORS blocked request from: ${origin}`);
-        callback(null, false); // Block it but don't crash
-      }
-    },
+    origin: frontendUrl.split(',').map(o => o.trim()),
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'apollo-require-preflight'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   });
 
   app.useGlobalPipes(
