@@ -22,15 +22,14 @@ export class LlmService {
       throw new Error('GEMINI_API_KEY is not set in the environment variables');
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent`;
-
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    
     try {
       // 1. Call real Gemini API
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-goog-api-key': apiKey,
         },
         body: JSON.stringify({
           contents: [
@@ -42,10 +41,13 @@ export class LlmService {
       });
 
       if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.statusText}`);
+        const errorBody = await response.json().catch(() => ({ raw: response.statusText }));
+        this.logger.error(`Gemini API error details: ${JSON.stringify(errorBody)}`);
+        throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+      this.logger.debug(`Gemini response data: ${JSON.stringify(data)}`);
       const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!reply) {
