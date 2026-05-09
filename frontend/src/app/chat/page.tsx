@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useCreateChat } from '@/hooks/useChats';
-import { ChatInput } from '@/components/chat/chat-input';
+import { useCreateChat } from '../../hooks/useChats';
+import { ChatInput } from '../../components/chat/chat-input';
 
 export default function ChatIndexPage() {
   const router = useRouter();

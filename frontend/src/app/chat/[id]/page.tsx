@@ -3,10 +3,10 @@
 import { useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { useChat } from '@/hooks/useChats';
-import { useMessages, useSendMessage } from '@/hooks/useMessages';
-import { MessageList } from '@/components/chat/message-list';
-import { ChatInput } from '@/components/chat/chat-input';
+import { useChat } from '../../../hooks/useChats';
+import { useMessages, useSendMessage } from '../../../hooks/useMessages';
+import { MessageList } from '../../../components/chat/message-list';
+import { ChatInput } from '../../../components/chat/chat-input';
 
 export default function ChatDetailPage() {
   const params = useParams();

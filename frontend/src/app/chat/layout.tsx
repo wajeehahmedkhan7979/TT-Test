@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/providers/auth-provider';
-import { ChatSidebar } from '@/components/chat/chat-sidebar';
-import { QuickActions } from '@/components/chat/quick-actions';
-import { useCreateChat } from '@/hooks/useChats';
+import { useAuthContext } from '../../providers/auth-provider';
+import { ChatSidebar } from '../../components/chat/chat-sidebar';
+import { QuickActions } from '../../components/chat/quick-actions';
+import { useCreateChat } from '../../hooks/useChats';
 
 export default function ChatLayout({
   children,

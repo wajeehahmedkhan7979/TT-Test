@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
-import { AuthProvider } from '@/providers/auth-provider';
-import { QueryProvider } from '@/providers/query-provider';
-import { ThemeProvider } from '@/providers/theme-provider';
+import { AuthProvider } from '../providers/auth-provider';
+import { QueryProvider } from '../providers/query-provider';
+import { ThemeProvider } from '../providers/theme-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
