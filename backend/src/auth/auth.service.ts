@@ -10,25 +10,21 @@ export class AuthService {
 
   /**
    * Ensures a user record exists in our database, synced from Supabase Auth.
-   * Creates the user if they don't exist yet (first login).
+   * Uses upsert to atomically handle concurrent first-login requests —
+   * prevents unique constraint violations from the find-then-create race condition.
    */
   async ensureUser(authUser: AuthenticatedUser) {
-    const existing = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.upsert({
       where: { id: authUser.id },
-    });
-
-    if (existing) {
-      return existing;
-    }
-
-    this.logger.log(`Creating new user record for ${authUser.email}`);
-
-    return this.prisma.user.create({
-      data: {
+      create: {
         id: authUser.id,
         email: authUser.email,
       },
+      update: {}, // intentionally empty — don't overwrite on re-login
     });
+
+    this.logger.log(`User synced: ${user.email} (${user.id})`);
+    return user;
   }
 
   async getUser(userId: string) {

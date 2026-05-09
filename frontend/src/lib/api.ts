@@ -30,16 +30,32 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      // Try refreshing the session
-      const { error: refreshError } = await supabase.auth.refreshSession();
-      if (refreshError) {
-        // Session is truly expired, redirect to login
+    const originalRequest = error.config;
+    
+    // Only try to refresh once per request
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      console.warn('API returned 401. Attempting to refresh Supabase session...');
+      
+      const { data, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError || !data.session) {
+        console.error('Session refresh failed. Redirecting to login.');
         if (typeof window !== 'undefined') {
+          // Clear any corrupted state
+          await supabase.auth.signOut();
           window.location.href = '/login';
         }
+        return Promise.reject(error);
       }
+      
+      // Session refreshed! Retry the original request with the new token
+      console.log('Session refreshed successfully. Retrying request...');
+      originalRequest.headers.Authorization = `Bearer ${data.session.access_token}`;
+      return api(originalRequest);
     }
+    
+    console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   },
 );

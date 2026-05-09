@@ -14,7 +14,18 @@ export class ChatsService {
   /**
    * Creates a new chat for the authenticated user.
    */
-  async createChat(userId: string, title?: string) {
+  async createChat(userId: string, title?: string, email?: string) {
+    // Ensure the user exists in our local Prisma DB before associating a chat
+    // This fixes the P2003 foreign key constraint error if they haven't visited /auth/me
+    await this.prisma.user.upsert({
+      where: { id: userId },
+      update: {},
+      create: {
+        id: userId,
+        email: email || `${userId}@placeholder.com`,
+      },
+    });
+
     const chat = await this.prisma.chat.create({
       data: {
         userId,
@@ -86,14 +97,19 @@ export class ChatsService {
   }
 
   /**
-   * Updates the chat title. Useful for auto-titling from first message.
+   * Updates the chat title in a single query with ownership enforcement.
+   * Uses updateMany to filter by both id and userId atomically.
    */
   async updateChatTitle(chatId: string, userId: string, title: string) {
-    await this.getChatById(chatId, userId);
-
-    return this.prisma.chat.update({
-      where: { id: chatId },
+    const result = await this.prisma.chat.updateMany({
+      where: { id: chatId, userId },
       data: { title },
     });
+
+    if (result.count === 0) {
+      throw new NotFoundException('Chat not found');
+    }
+
+    return result;
   }
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useChat } from '@/hooks/useChats';
@@ -14,6 +15,8 @@ export default function ChatDetailPage() {
   const { data: chat, error: chatError } = useChat(chatId);
   const { data: messages, isLoading: messagesLoading, error: messagesError } = useMessages(chatId);
   const sendMessage = useSendMessage(chatId);
+  
+  const hasSentInitialRef = useRef(false);
 
   const isWaitingForReply = (() => {
     if (!messages || messages.length === 0) return false;
@@ -31,11 +34,25 @@ export default function ChatDetailPage() {
     });
   };
 
+  // Check for initial message from the new chat screen
+  useEffect(() => {
+    if (hasSentInitialRef.current || messagesLoading || (messages && messages.length > 0)) return;
+    
+    const key = `initial_message_${chatId}`;
+    const initialContent = sessionStorage.getItem(key);
+    
+    if (initialContent) {
+      hasSentInitialRef.current = true;
+      sessionStorage.removeItem(key);
+      handleSend(initialContent);
+    }
+  }, [chatId, messages, messagesLoading]);
+
   if (chatError) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-zinc-300 mb-2">
+      <div className="flex flex-1 items-center justify-center bg-white dark:bg-[#0a0a0a]">
+        <div className="text-center px-4">
+          <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
             Chat not found
           </h2>
           <p className="text-sm text-zinc-500">
@@ -47,29 +64,23 @@ export default function ChatDetailPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Chat Header */}
-      {chat && (
-        <header className="flex items-center border-b border-zinc-800 px-6 py-3 bg-zinc-950/80 backdrop-blur-sm">
-          <h2 className="text-sm font-medium text-zinc-300 truncate">
-            {chat.title}
-          </h2>
-        </header>
-      )}
-
+    <div className="flex flex-1 flex-col overflow-hidden bg-white dark:bg-[#0a0a0a] transition-colors duration-200">
       {/* Messages */}
       <MessageList
         messages={messages}
         isLoading={messagesLoading}
         error={messagesError}
+        chatTitle={chat?.title}
       />
 
       {/* Input */}
-      <ChatInput
-        onSend={handleSend}
-        disabled={sendMessage.isPending}
-        isWaitingForReply={isWaitingForReply}
-      />
+      <div className="w-full">
+        <ChatInput
+          onSend={handleSend}
+          disabled={sendMessage.isPending}
+          isWaitingForReply={isWaitingForReply}
+        />
+      </div>
     </div>
   );
 }

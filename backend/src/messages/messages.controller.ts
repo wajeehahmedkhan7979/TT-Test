@@ -7,12 +7,13 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthGuard, AuthenticatedRequest } from '../auth/auth.guard';
 import { MessagesService } from './messages.service';
 import { SendMessageDto } from './dto';
 
 @Controller('chats/:chatId/messages')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, ThrottlerGuard)
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 

@@ -22,7 +22,7 @@ export class ChatsController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateChatDto,
   ) {
-    return this.chatsService.createChat(req.user.id, dto.title);
+    return this.chatsService.createChat(req.user.id, dto.title, req.user.email);
   }
 
   @Get()
