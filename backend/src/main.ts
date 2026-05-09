@@ -13,14 +13,14 @@ async function bootstrap() {
 
   const frontendUrl = configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
   
-  const allowedOrigins = frontendUrl.split(',');
+  const allowedOrigins = frontendUrl.split(',').map(origin => origin.trim());
   console.log(`🔒 CORS: Allowing origins: ${allowedOrigins.join(', ')}`);
   
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'apollo-require-preflight'],
   });
 
   app.useGlobalPipes(
