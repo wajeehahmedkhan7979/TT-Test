@@ -11,7 +11,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const frontendUrl = configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+  const frontendUrl = configService.get<string>('FRONTEND_URL', 'http://localhost:3000').replace(/['"]/g, '');
   
   const allowedOrigins = frontendUrl.split(',').map(origin => origin.trim());
   console.log(`🔒 CORS: Allowing origins: ${allowedOrigins.join(', ')}`);
@@ -21,6 +21,8 @@ async function bootstrap() {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'apollo-require-preflight'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   app.useGlobalPipes(
