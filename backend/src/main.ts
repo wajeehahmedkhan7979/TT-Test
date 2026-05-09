@@ -13,8 +13,11 @@ async function bootstrap() {
 
   const frontendUrl = configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
   
+  const allowedOrigins = frontendUrl.split(',');
+  console.log(`🔒 CORS: Allowing origins: ${allowedOrigins.join(', ')}`);
+  
   app.enableCors({
-    origin: frontendUrl.split(','), // Support comma-separated origins
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
