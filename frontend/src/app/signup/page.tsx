@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { useAuthContext } from '@/providers/auth-provider';
+import { useAuthContext } from '../providers/auth-provider';
 
 export default function SignupPage() {
   const router = useRouter();

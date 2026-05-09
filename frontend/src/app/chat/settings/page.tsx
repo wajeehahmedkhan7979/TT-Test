@@ -1,9 +1,9 @@
 'use client';
 
-import { useAuthContext } from '@/providers/auth-provider';
-import { useTheme } from '@/providers/theme-provider';
+import { useAuthContext } from '../../providers/auth-provider';
+import { useTheme } from '../../providers/theme-provider';
 import { User, Bell, Shield, Moon, Monitor, Sun } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 
 export default function SettingsPage() {
   const { user } = useAuthContext();

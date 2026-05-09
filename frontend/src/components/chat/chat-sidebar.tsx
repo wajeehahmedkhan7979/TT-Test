@@ -3,11 +3,11 @@
 import { useRouter, useParams } from 'next/navigation';
 import { Home, Zap, Folder, MessageSquare, PanelLeftClose, Plus, Trash2, LogOut, Loader2, Settings, Sun, Moon } from 'lucide-react';
 import { toast } from 'sonner';
-import { useChats, useCreateChat, useDeleteChat } from '@/hooks/useChats';
-import { useAuthContext } from '@/providers/auth-provider';
-import { useTheme } from '@/providers/theme-provider';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { useChats, useCreateChat, useDeleteChat } from '../../hooks/useChats';
+import { useAuthContext } from '../../providers/auth-provider';
+import { useTheme } from '../../providers/theme-provider';
+import { Skeleton } from '../ui/skeleton';
+import { cn } from '../../lib/utils';
 
 export function ChatSidebar({ onClose, onQuickActionsClick }: { onClose?: () => void; onQuickActionsClick?: () => void }) {
   const router = useRouter();

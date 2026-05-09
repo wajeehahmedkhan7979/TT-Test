@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
-import type { Message, SendMessageResponse } from '@/types';
+import { api } from '../lib/api';
+import type { Message, SendMessageResponse } from '../types';
 
 /**
  * Fetches messages for a chat with conditional polling.

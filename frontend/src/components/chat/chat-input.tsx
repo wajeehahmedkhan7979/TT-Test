@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Plus, X, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 
 interface ChatInputProps {
   onSend: (content: string) => void;

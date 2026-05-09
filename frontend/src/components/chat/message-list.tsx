@@ -2,8 +2,8 @@
 
 import { useRef, useEffect } from 'react';
 import { MessageItem } from './message-item';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { Message } from '@/types';
+import { Skeleton } from '../ui/skeleton';
+import type { Message } from '../../types';
 
 interface MessageListProps {
   messages: Message[] | undefined;

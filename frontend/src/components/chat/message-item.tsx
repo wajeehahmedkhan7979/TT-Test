@@ -1,8 +1,8 @@
 'use client';
 
-import { useAuthContext } from '@/providers/auth-provider';
-import { cn } from '@/lib/utils';
-import type { Message } from '@/types';
+import { useAuthContext } from '../../providers/auth-provider';
+import { cn } from '../../lib/utils';
+import type { Message } from '../../types';
 
 interface MessageItemProps {
   message: Message;
