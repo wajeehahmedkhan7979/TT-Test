@@ -16,19 +16,25 @@ export const api = axios.create({
 
 // Request interceptor: attach Supabase JWT
 api.interceptors.request.use(async (config) => {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      // eslint-disable-next-line no-console
+      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} | Token Present`);
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn(`[API Request] ${config.method?.toUpperCase()} ${config.url} | No Token Found`);
+    }
+  } catch (error) {
     // eslint-disable-next-line no-console
-    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} | Token Present`);
-  } else {
-    // eslint-disable-next-line no-console
-    console.warn(`[API Request] ${config.method?.toUpperCase()} ${config.url} | No Token Found`);
+    console.error('[API Request Error]', error);
   }
-
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
 // Response interceptor: handle auth errors

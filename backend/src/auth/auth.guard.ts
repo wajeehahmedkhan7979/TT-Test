@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
+import * as https from 'https';
 
 export interface AuthenticatedUser {
   id: string;
@@ -18,13 +19,38 @@ export interface AuthenticatedRequest extends Request {
   user: AuthenticatedUser;
 }
 
+/**
+ * Utility helper for HTTP requests since some Node versions lack 'fetch'
+ */
+const executeHttpsRequest = async (url: string, options: any = {}): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`HTTP Error ${res.statusCode}: ${data}`));
+        } else {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            resolve(data);
+          }
+        }
+      });
+    });
+    req.on('error', reject);
+    if (options.body) req.write(options.body);
+    req.end();
+  });
+};
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
+  private publicKey: any = null;
 
   constructor(private readonly configService: ConfigService) {}
-
-  private publicKey: any = null;
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -67,12 +93,19 @@ export class AuthGuard implements CanActivate {
 
     try {
       const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-      const response = await fetch(`${supabaseUrl}/auth/v1/.well-known/jwks.json`);
-      const { keys } = await response.json();
+      if (!supabaseUrl) {
+        throw new Error('SUPABASE_URL is not defined in environment variables');
+      }
+
+      this.logger.debug(`Fetching JWKS from: ${supabaseUrl}/auth/v1/.well-known/jwks.json`);
+      const data = await executeHttpsRequest(`${supabaseUrl}/auth/v1/.well-known/jwks.json`);
+      const { keys } = data;
       
-      // Find the key used for signing (usually the first one or matches the 'kid' in header)
+      if (!keys || keys.length === 0) {
+        throw new Error('No keys found in JWKS response');
+      }
+
       const jwk = keys[0]; 
-      
       const { createPublicKey } = await import('crypto');
       this.publicKey = createPublicKey({
         key: jwk,
