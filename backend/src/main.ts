@@ -12,7 +12,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.enableCors({
-    origin: true,
+    origin: configService.get<string>('FRONTEND_URL', 'http://localhost:3000'),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -28,10 +28,10 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  const port = configService.get<number>('PORT', 3001);
+  const port = process.env.PORT || 3001;
   await app.listen(port);
 
-  console.log(`🚀 Backend running on http://localhost:${port}`);
+  console.log(`🚀 Backend running on port ${port}`);
 }
 
 bootstrap();

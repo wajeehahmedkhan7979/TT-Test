@@ -22,7 +22,7 @@ export class LlmService {
       throw new Error('GEMINI_API_KEY is not set in the environment variables');
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent`;
 
     try {
       // 1. Call real Gemini API

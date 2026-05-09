@@ -26,32 +26,35 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    
-    console.log(`\n\n=== AUTHGUARD TRIGGERED for ${request.method} ${request.url} ===`);
-    
     const token = this.extractToken(request);
-    console.log(`Extracted token present: ${!!token}`);
-    
-    if (token) {
-        try {
-            const decoded = jwt.decode(token, { complete: true });
-            console.log(`Token payload: ${JSON.stringify(decoded?.payload)}`);
-            
-            // Just map whatever we can find to the request user so Prisma doesn't crash if the user exists
-            request.user = {
-                id: (decoded as any)?.payload?.sub || '00000000-0000-0000-0000-000000000000',
-                email: (decoded as any)?.payload?.email || 'dummy@turingtech.test'
-            };
-        } catch (e) {
-            console.log(`Failed to decode token: ${e}`);
-            request.user = { id: '00000000-0000-0000-0000-000000000000', email: 'dummy@turingtech.test' };
-        }
-    } else {
-        request.user = { id: '00000000-0000-0000-0000-000000000000', email: 'dummy@turingtech.test' };
+
+    if (!token) {
+      throw new UnauthorizedException('Missing authentication token');
     }
 
-    console.log(`Allowing request through with user: ${request.user.id}`);
-    return true; // NEVER throw 401
+    try {
+      const jwtSecret = this.configService.get<string>('SUPABASE_JWT_SECRET');
+      if (!jwtSecret) {
+        this.logger.error('SUPABASE_JWT_SECRET is not configured');
+        throw new Error('Internal server configuration error');
+      }
+
+      const payload = jwt.verify(token, jwtSecret) as jwt.JwtPayload;
+      
+      if (!payload || !payload.sub) {
+        throw new UnauthorizedException('Invalid token payload');
+      }
+
+      request.user = {
+        id: payload.sub as string,
+        email: (payload.email as string) || 'no-email@supabase.local',
+      };
+
+      return true;
+    } catch (error) {
+      this.logger.error(`Authentication failed: ${error.message}`);
+      throw new UnauthorizedException('Invalid or expired authentication token');
+    }
   }
 
   private extractToken(request: Request): string | null {
