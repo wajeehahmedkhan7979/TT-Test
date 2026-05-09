@@ -3,6 +3,10 @@ import { supabase } from './supabase';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' && API_URL.includes('localhost')) {
+  console.warn('WARNING: API_URL is pointing to localhost in a production build. This will likely fail in the browser.');
+}
+
 /**
  * Axios instance pre-configured to attach the Supabase access token
  * to every request as a Bearer token.
